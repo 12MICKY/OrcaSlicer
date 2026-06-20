@@ -1,0 +1,9 @@
+{
+	"type": "machine",
+	"setting_id": "SM_U1_3",
+	"name": "Snapmaker U1-3",
+	"from": "system",
+	"instantiation": "true",
+	"inherits": "Snapmaker U1 (0.4 nozzle)",
+	"print_host": "10.15.5.152"
+}

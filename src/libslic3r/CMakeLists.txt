@@ -499,6 +499,7 @@ cmake_policy(SET CMP0011 NEW)
 find_package(CGAL REQUIRED)
 find_package(OpenCV REQUIRED core)
 cmake_policy(POP)
+slic3r_remap_configs(opencv_world RelWithDebInfo Release)
 
 add_library(libslic3r_cgal STATIC
     CutSurface.hpp CutSurface.cpp
@@ -544,6 +545,7 @@ target_include_directories(libslic3r SYSTEM PUBLIC ${OpenCASCADE_INCLUDE_DIR})
 
 find_package(JPEG REQUIRED)
 find_package(draco REQUIRED)
+slic3r_remap_configs(draco::draco RelWithDebInfo Release)
 
 set(OCCT_LIBS
     TKXDESTEP

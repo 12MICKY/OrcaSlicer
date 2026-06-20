@@ -374,7 +374,7 @@ void AppConfig::set_defaults()
         set_bool("stealth_mode", false);
     }
     if (get("hide_login_side_panel").empty()) {
-        set_bool("hide_login_side_panel", false);
+        set_bool("hide_login_side_panel", true);
     }
     if (get("allow_abnormal_storage").empty()) {
         set_bool("allow_abnormal_storage", false);
@@ -1688,12 +1688,14 @@ void AppConfig::set_cloud_providers(const std::vector<std::string>& providers)
 
 bool AppConfig::has_cloud_provider(const std::string& provider) const
 {
+    if (provider == "bbl") return false; // Bambu Cloud disabled in CudStemlab
     auto providers = get_cloud_providers();
     return std::find(providers.begin(), providers.end(), provider) != providers.end();
 }
 
 void AppConfig::add_cloud_provider(const std::string& provider)
 {
+    if (provider == "bbl") return; // Bambu Cloud disabled in CudStemlab
     auto providers = get_cloud_providers();
     if (std::find(providers.begin(), providers.end(), provider) == providers.end()) {
         providers.push_back(provider);

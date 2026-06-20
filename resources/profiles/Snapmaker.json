@@ -1715,6 +1715,38 @@
 			"sub_path": "machine/Snapmaker U1 (0.4 nozzle).json"
 		},
 		{
+			"name": "Snapmaker U1-1",
+			"sub_path": "machine/Snapmaker U1-1.json"
+		},
+		{
+			"name": "Snapmaker U1-2",
+			"sub_path": "machine/Snapmaker U1-2.json"
+		},
+		{
+			"name": "Snapmaker U1-3",
+			"sub_path": "machine/Snapmaker U1-3.json"
+		},
+		{
+			"name": "Snapmaker U1-4",
+			"sub_path": "machine/Snapmaker U1-4.json"
+		},
+		{
+			"name": "Snapmaker U1-5",
+			"sub_path": "machine/Snapmaker U1-5.json"
+		},
+		{
+			"name": "Snapmaker U1-6",
+			"sub_path": "machine/Snapmaker U1-6.json"
+		},
+		{
+			"name": "Snapmaker U1-7",
+			"sub_path": "machine/Snapmaker U1-7.json"
+		},
+		{
+			"name": "Snapmaker U1-8",
+			"sub_path": "machine/Snapmaker U1-8.json"
+		},
+		{
 			"name": "Snapmaker U1 (0.4+0.6 nozzle)",
 			"sub_path": "machine/Snapmaker U1 (0.4+0.6 nozzle).json"
 		},
