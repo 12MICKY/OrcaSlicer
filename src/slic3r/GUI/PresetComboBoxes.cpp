@@ -913,6 +913,9 @@ PlaterPresetComboBox::PlaterPresetComboBox(wxWindow *parent, Preset::Type preset
             });
 #ifdef __linux__
         edit_btn->Hide();
+#else
+        if (m_type == Preset::TYPE_PRINTER)
+            edit_btn->Hide();
 #endif //__linux__
     }
 }

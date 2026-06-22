@@ -1,0 +1,94 @@
+name: Build StemlabSlicer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: brew install cmake ninja autoconf automake libtool texinfo
+      - name: Build deps
+        run: PATH="/opt/homebrew/opt/texinfo/bin:$PATH" ./build_release_macos.sh -d -a arm64
+      - name: Build app
+        run: PATH="/opt/homebrew/opt/texinfo/bin:$PATH" ./build_release_macos.sh -s -a arm64 -x
+      - name: Package DMG
+        run: |
+          APP="build/arm64/OrcaSlicer/OrcaSlicer.app"
+          mv "$APP" "build/arm64/OrcaSlicer/StemlabSlicer.app"
+          APP="build/arm64/OrcaSlicer/StemlabSlicer.app"
+          cp resources/images/OrcaSlicer.icns "$APP/Contents/Resources/OrcaSlicer.icns"
+          mkdir -p resources/stemlab_defaults/machine
+          cp .github/stemlab_defaults/machine/*.json resources/stemlab_defaults/machine/
+          cp .github/stemlab_defaults/OrcaSlicer.conf resources/stemlab_defaults/
+          cp -R resources/stemlab_defaults "$APP/Contents/Resources/"
+          mv "$APP/Contents/MacOS/OrcaSlicer" "$APP/Contents/MacOS/OrcaSlicer.bin"
+          cp .github/stemlab_defaults/launcher.sh "$APP/Contents/MacOS/OrcaSlicer"
+          chmod +x "$APP/Contents/MacOS/OrcaSlicer"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName StemlabSlicer" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string StemlabSlicer" "$APP/Contents/Info.plist" 2>/dev/null || true
+          mkdir dmg_src
+          cp -R "$APP" dmg_src/
+          ln -sf /Applications dmg_src/Applications
+          hdiutil create -volname StemlabSlicer -srcfolder dmg_src -ov -format UDZO StemlabSlicer_Mac.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: StemlabSlicer_Mac.dmg
+
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libgtk-3-dev libdbus-1-dev \
+            libwebkit2gtk-4.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            texinfo autoconf automake libtool wget curl git
+      - name: Build
+        run: ./build_linux.sh -i -s
+      - name: Package AppImage
+        run: |
+          find . -name "*.AppImage" | head -1 | xargs -I{} mv {} StemlabSlicer_Linux.AppImage || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: StemlabSlicer_Linux.AppImage
+
+  build-windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build deps
+        run: .\build_release_vs2022.bat deps
+      - name: Build app
+        run: .\build_release_vs2022.bat release
+      - name: Package
+        run: |
+          Compress-Archive -Path "build\release\StemlabSlicer.exe" -DestinationPath "StemlabSlicer_Windows.zip" -Force
+        shell: powershell
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-zip
+          path: StemlabSlicer_Windows.zip
+
+  release:
+    needs: [build-macos, build-linux, build-windows]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload latest macos-dmg/StemlabSlicer_Mac.dmg \
+            --repo 12MICKY/CUDSteamlabSlicer --clobber || true
+          gh release upload latest linux-appimage/StemlabSlicer_Linux.AppImage \
+            --repo 12MICKY/CUDSteamlabSlicer --clobber || true
+          gh release upload latest windows-zip/StemlabSlicer_Windows.zip \
+            --repo 12MICKY/CUDSteamlabSlicer --clobber || true

@@ -1,0 +1,21 @@
+{
+	"from": "system",
+	"inherits": "Snapmaker U1 (0.4 nozzle)",
+	"name": "Snapmaker U1-3",
+	"print_host": "10.15.5.152",
+	"printer_extruder_id": [
+		"1",
+		"2",
+		"3",
+		"4"
+	],
+	"printer_extruder_variant": [
+		"Direct Drive Standard",
+		"Direct Drive Standard",
+		"Direct Drive Standard",
+		"Direct Drive Standard"
+	],
+	"printer_settings_id": "Snapmaker U1-3",
+	"printhost_apikey": "25f37875b8914dcc9481b1ac5de50997",
+	"version": "2.4.0.3"
+}
