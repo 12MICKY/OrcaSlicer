@@ -22,10 +22,9 @@ jobs:
           mv "$APP" "build/arm64/OrcaSlicer/StemlabSlicer.app"
           APP="build/arm64/OrcaSlicer/StemlabSlicer.app"
           cp resources/images/OrcaSlicer.icns "$APP/Contents/Resources/OrcaSlicer.icns"
-          mkdir -p resources/stemlab_defaults/machine
-          cp .github/stemlab_defaults/machine/*.json resources/stemlab_defaults/machine/
-          cp .github/stemlab_defaults/OrcaSlicer.conf resources/stemlab_defaults/
-          cp -R resources/stemlab_defaults "$APP/Contents/Resources/"
+          mkdir -p "$APP/Contents/Resources/stemlab_defaults/machine"
+          cp .github/stemlab_defaults/machine/*.json "$APP/Contents/Resources/stemlab_defaults/machine/"
+          cp .github/stemlab_defaults/OrcaSlicer.conf "$APP/Contents/Resources/stemlab_defaults/"
           mv "$APP/Contents/MacOS/OrcaSlicer" "$APP/Contents/MacOS/OrcaSlicer.bin"
           cp .github/stemlab_defaults/launcher.sh "$APP/Contents/MacOS/OrcaSlicer"
           chmod +x "$APP/Contents/MacOS/OrcaSlicer"
@@ -46,32 +45,46 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install deps
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build libgtk-3-dev libdbus-1-dev \
-            libwebkit2gtk-4.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-            texinfo autoconf automake libtool wget curl git
+          sudo apt-get update --fix-missing
+          sudo apt-get install -y --fix-broken \
+            cmake ninja-build libgtk-3-dev libdbus-1-dev \
+            libwebkit2gtk-4.0-dev \
+            texinfo autoconf automake libtool wget curl git \
+            libgl1-mesa-dev libglu1-mesa-dev \
+            libxcb-util-dev libxcb-icccm4-dev libxcb-image0-dev \
+            libssl-dev zlib1g-dev
       - name: Build
         run: ./build_linux.sh -i -s
       - name: Package AppImage
         run: |
-          find . -name "*.AppImage" | head -1 | xargs -I{} mv {} StemlabSlicer_Linux.AppImage || true
+          APPIMAGE=$(find . -name "*.AppImage" | head -1)
+          if [ -n "$APPIMAGE" ]; then
+            mv "$APPIMAGE" StemlabSlicer_Linux.AppImage
+          else
+            find . -name "OrcaSlicer" -type f -executable | head -1 | xargs -I{} cp {} StemlabSlicer_Linux
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: linux-appimage
-          path: StemlabSlicer_Linux.AppImage
+          path: StemlabSlicer_Linux*
 
   build-windows:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - name: Build deps
-        run: .\build_release_vs2022.bat deps
+        shell: cmd
+        run: build_release_vs2022.bat deps
       - name: Build app
-        run: .\build_release_vs2022.bat release
+        shell: cmd
+        run: build_release_vs2022.bat release
       - name: Package
-        run: |
-          Compress-Archive -Path "build\release\StemlabSlicer.exe" -DestinationPath "StemlabSlicer_Windows.zip" -Force
         shell: powershell
+        run: |
+          $exe = Get-ChildItem -Recurse -Filter "OrcaSlicer*.exe" | Where-Object { $_.Name -notlike "*installer*" } | Select-Object -First 1
+          if ($exe) {
+            Compress-Archive -Path $exe.FullName -DestinationPath "StemlabSlicer_Windows.zip" -Force
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: windows-zip
@@ -88,7 +101,7 @@ jobs:
         run: |
           gh release upload latest macos-dmg/StemlabSlicer_Mac.dmg \
             --repo 12MICKY/CUDSteamlabSlicer --clobber || true
-          gh release upload latest linux-appimage/StemlabSlicer_Linux.AppImage \
+          gh release upload latest linux-appimage/StemlabSlicer_Linux* \
             --repo 12MICKY/CUDSteamlabSlicer --clobber || true
           gh release upload latest windows-zip/StemlabSlicer_Windows.zip \
             --repo 12MICKY/CUDSteamlabSlicer --clobber || true
