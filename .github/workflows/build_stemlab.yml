@@ -53,8 +53,10 @@ jobs:
             libgl1-mesa-dev libglu1-mesa-dev \
             libxcb-util-dev libxcb-icccm4-dev libxcb-image0-dev \
             libssl-dev zlib1g-dev
-      - name: Build
-        run: ./build_linux.sh -i -s
+      - name: Build deps
+        run: ./build_linux.sh -d
+      - name: Build app
+        run: ./build_linux.sh -s
       - name: Package AppImage
         run: |
           APPIMAGE=$(find . -name "*.AppImage" | head -1)
